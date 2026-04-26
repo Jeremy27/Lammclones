@@ -14,6 +14,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>25</javafx.version>
+        <jpackage.modules>java.base,java.desktop,java.logging,java.prefs,javafx.controls,javafx.graphics,javafx.base</jpackage.modules>
     </properties>
 
     <repositories>
@@ -55,5 +56,125 @@
                 </excludes>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>fr.courel.lammclones.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>dist-linux</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage-deb</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.build.directory}/jpackage-input" quiet="true"/>
+                                        <mkdir dir="${project.build.directory}/jpackage-input"/>
+                                        <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                              todir="${project.build.directory}/jpackage-input"/>
+                                        <exec executable="jpackage" failonerror="true">
+                                            <arg value="--type"/>              <arg value="deb"/>
+                                            <arg value="--input"/>             <arg value="${project.build.directory}/jpackage-input"/>
+                                            <arg value="--main-jar"/>          <arg value="${project.build.finalName}.jar"/>
+                                            <arg value="--main-class"/>        <arg value="fr.courel.lammclones.Main"/>
+                                            <arg value="--name"/>              <arg value="Lammclones"/>
+                                            <arg value="--app-version"/>       <arg value="${project.version}"/>
+                                            <arg value="--vendor"/>            <arg value="Jeremy Courel"/>
+                                            <arg value="--add-modules"/>       <arg value="${jpackage.modules}"/>
+                                            <arg value="--linux-shortcut"/>
+                                            <arg value="--dest"/>              <arg value="${project.build.directory}"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>dist-win</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage-msi</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.build.directory}/jpackage-input" quiet="true"/>
+                                        <mkdir dir="${project.build.directory}/jpackage-input"/>
+                                        <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                              todir="${project.build.directory}/jpackage-input"/>
+                                        <exec executable="jpackage" failonerror="true">
+                                            <arg value="--type"/>              <arg value="msi"/>
+                                            <arg value="--input"/>             <arg value="${project.build.directory}/jpackage-input"/>
+                                            <arg value="--main-jar"/>          <arg value="${project.build.finalName}.jar"/>
+                                            <arg value="--main-class"/>        <arg value="fr.courel.lammclones.Main"/>
+                                            <arg value="--name"/>              <arg value="Lammclones"/>
+                                            <arg value="--app-version"/>       <arg value="${project.version}"/>
+                                            <arg value="--vendor"/>            <arg value="Jeremy Courel"/>
+                                            <arg value="--add-modules"/>       <arg value="${jpackage.modules}"/>
+                                            <arg value="--win-dir-chooser"/>
+                                            <arg value="--win-menu"/>
+                                            <arg value="--win-shortcut"/>
+                                            <arg value="--dest"/>              <arg value="${project.build.directory}"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

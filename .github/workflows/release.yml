@@ -1,0 +1,15 @@
+name: Release Lammclones
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    uses: Jeremy27/LammCI/.github/workflows/app-release.yml@main
+    with:
+      app-name: Lammclones
+    permissions:
+      contents: write
+      packages: read
