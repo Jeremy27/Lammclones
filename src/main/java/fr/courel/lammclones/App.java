@@ -217,7 +217,7 @@ public class App extends Application {
     }
 
     private LammCardFx buildScanCard() {
-        btnScan = LammButtonFx.accent(LABEL_SCAN);
+        btnScan = LammButtonFx.primary(LABEL_SCAN);
         btnScan.setDisable(true);
         btnScan.setOnAction(e -> onScanClicked());
 
